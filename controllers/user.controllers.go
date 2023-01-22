@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 )
 
 type AuthUser struct {
@@ -33,13 +34,24 @@ func UserAuth(c *gin.Context) {
 }
 
 type UserRequest struct {
-	Email    string `json:"email" binding:"require"`
-	Username string `json:"username" binding:"require"`
-	Password string `json:"password" binding:"require"`
+	Email    string `json:"email" binding:"required"`
+	Username string `json:"username" binding:"required"`
+	Password string `json:"password" binding:"required"`
 }
 
 func UserCreate(c *gin.Context) {
 	var userRequest UserRequest
+
+	// Get Json Body
+	err := c.ShouldBindJSON(&userRequest)
+	if err != nil {
+		for _, e := range err.(validator.ValidationErrors) {
+			errorMessage := fmt.Sprintf("error in field %s condition: %s", e.Field(), e.ActualTag())
+			c.JSON(http.StatusBadRequest, errorMessage)
+
+		}
+		return
+	}
 
 	// Convert
 	createUser := models.User{
@@ -50,16 +62,11 @@ func UserCreate(c *gin.Context) {
 		DateUpdate: time.Now().Unix(),
 	}
 
-	// Get Json Body
-	err := c.ShouldBindJSON(&createUser)
-	if err != nil {
-		fmt.Println(err)
-	}
-
 	//Database Config
 	createUser, err = configs.AddUser(configs.DB, createUser)
 	if err != nil {
-		fmt.Println(err)
+		c.JSON(http.StatusBadRequest, err)
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{

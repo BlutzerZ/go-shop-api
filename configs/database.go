@@ -22,6 +22,12 @@ func ConnectDB() *gorm.DB {
 
 var DB *gorm.DB = ConnectDB()
 
+// ==================================================
+//
+//              S O M E    Q U E R Y
+//
+// ==================================================
+
 func AddUser(db *gorm.DB, user models.User) (models.User, error) {
 	err := db.Create(&user).Error
 
