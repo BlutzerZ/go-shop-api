@@ -1,7 +1,6 @@
 package main
 
 import (
-
 	"go-shop-api/configs"
 	"go-shop-api/routes"
 
@@ -20,6 +19,7 @@ func main() {
 	// fmt.Println(user)
 
 	routes.UserRoute(r)
+	routes.ProductRoutes(r)
 
 	r.Run()
 }

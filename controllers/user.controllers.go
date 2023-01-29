@@ -71,10 +71,26 @@ func UserCreate(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "success creating username",
-		"details": createUser})
+		"details": createUser,
+	})
+}
+
+type UserDeleteRequest struct {
+	ID int `json:"id" binding:"required"`
 }
 
 func UserDelete(c *gin.Context) {
-	id := c.Query("id")
-	c.JSON(http.StatusOK, gin.H{"message": id + " Success Deleted"})
+	var ud UserDeleteRequest
+
+	err := c.ShouldBindJSON(&ud)
+	if err != nil {
+		for _, e := range err.(validator.ValidationErrors) {
+			errorMessage := fmt.Sprintf("error in field %s condition: %s", e.Field(), e.ActualTag())
+			c.JSON(http.StatusBadRequest, errorMessage)
+
+		}
+		return
+	}
+	configs.DeleteUser(configs.DB, ud.ID)
+	c.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("%d sucess deleted from database", ud.ID)})
 }

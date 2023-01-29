@@ -1,10 +1,10 @@
 package configs
 
 import (
+	"fmt"
 	"go-shop-api/models"
 	"log"
 	"os"
-	"fmt"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -41,6 +41,11 @@ var DB *gorm.DB = ConnectDB()
 //
 // ==================================================
 
+// ===============
+//
+//	USER QUERY
+//
+// ===============
 func AddUser(db *gorm.DB, user models.User) (models.User, error) {
 	err := db.Create(&user).Error
 
@@ -51,4 +56,24 @@ func DeleteUser(db *gorm.DB, ID int) (int, error) {
 	err := db.Delete(models.User{}, ID).Error
 
 	return ID, err
+}
+
+// ===============
+//   PRODUCT QUERY
+// ===============
+
+// func Getproduct(db *gorm.DB, limit) (models.Product[], error){
+// 	// err := db.Limit(10)Find(&models.Products)
+// }
+
+func GetProductByID(db *gorm.DB, ID int) (int, error) {
+	err := db.Find(models.Product{}, ID).Error
+
+	return ID, err
+}
+
+func AddProduct(db *gorm.DB, product models.Product) (models.Product, error) {
+	err := db.Create(&product).Error
+
+	return product, err
 }
