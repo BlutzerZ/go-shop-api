@@ -5,6 +5,7 @@ import (
 	"go-shop-api/configs"
 	"go-shop-api/models"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -16,7 +17,21 @@ import (
 // }
 
 func GetProduct(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"message": "here the details product"})
+	prodLimitQuery := c.Query("limit")
+
+	// change value to int
+	prodLimit, err := strconv.Atoi(prodLimitQuery)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": err})
+		return
+	}
+
+	products, err := configs.GetProductByLimit(configs.DB, prodLimit)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": err})
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": products})
 }
 
 type ProductRequest struct {
@@ -53,12 +68,12 @@ func CreateProduct(c *gin.Context) {
 	// Databse Config
 	createProduct, err = configs.AddProduct(configs.DB, createProduct)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, err)
+		c.JSON(http.StatusBadRequest, gin.H{"message": err})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "sucess creating username",
+		"message": "sucess creating product",
 		"details": createProduct,
 	})
 }
