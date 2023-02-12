@@ -11,13 +11,13 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-type AuthUser struct {
+type UserAuthRequest struct {
 	Username string
 	Password string
 }
 
 func UserAuth(c *gin.Context) {
-	var authInput AuthUser
+	var authInput UserAuthRequest
 
 	err := c.ShouldBindJSON(&authInput)
 	if err != nil {
@@ -25,12 +25,19 @@ func UserAuth(c *gin.Context) {
 	}
 
 	// auth user and password
-	if authInput.Username == "admin" && authInput.Password == "admin" {
-		c.JSON(http.StatusOK, gin.H{"message": "login sucess"})
+	isAuth, err := configs.AuthUser(configs.DB, authInput.Username, authInput.Password)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": err})
 		return
 	}
 
-	c.JSON(http.StatusBadRequest, gin.H{"message": "login failed"})
+	// return json is auth
+	if isAuth {
+		c.JSON(http.StatusOK, gin.H{"message": "login sucess"})
+	} else {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "login fail"})
+	}
+
 }
 
 type UserRequest struct {
