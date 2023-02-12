@@ -77,7 +77,7 @@ func DeleteUser(db *gorm.DB, ID int) (int, error) {
 func GetProductByLimit(db *gorm.DB, limit int) ([]models.Product, error) {
 	var products []models.Product
 
-	err := db.Limit(10).Find(&products).Error
+	err := db.Limit(limit).Find(&products).Error
 
 	return products, err
 }
