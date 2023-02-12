@@ -41,11 +41,23 @@ var DB *gorm.DB = ConnectDB()
 //
 // ==================================================
 
-// ===============
+// ================
 //
 //	USER QUERY
 //
-// ===============
+// ================
+func AuthUser(db *gorm.DB, username string, password string) (bool, error) {
+	var user models.User
+
+	err := db.Find(&user, "username = ? AND password = ?", username, password).Error
+	isAuth := false
+	if user != (models.User{}) {
+		isAuth = true
+	}
+
+	return isAuth, err
+}
+
 func AddUser(db *gorm.DB, user models.User) (models.User, error) {
 	err := db.Create(&user).Error
 
@@ -58,18 +70,24 @@ func DeleteUser(db *gorm.DB, ID int) (int, error) {
 	return ID, err
 }
 
-// ===============
+// ====================
 //   PRODUCT QUERY
-// ===============
+// ====================
 
-// func Getproduct(db *gorm.DB, limit) (models.Product[], error){
-// 	// err := db.Limit(10)Find(&models.Products)
-// }
+func GetProductByLimit(db *gorm.DB, limit int) ([]models.Product, error) {
+	var products []models.Product
 
-func GetProductByID(db *gorm.DB, ID int) (int, error) {
-	err := db.Find(models.Product{}, ID).Error
+	err := db.Limit(10).Find(&products).Error
 
-	return ID, err
+	return products, err
+}
+
+func GetProductByID(db *gorm.DB, ID int) (models.Product, error) {
+	var product models.Product
+
+	err := db.Find(&product, ID).Error
+
+	return product, err
 }
 
 func AddProduct(db *gorm.DB, product models.Product) (models.Product, error) {
