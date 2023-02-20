@@ -84,10 +84,10 @@ func GetProductByLimit(db *gorm.DB, limit int) ([]models.Product, error) {
 	return products, err
 }
 
-func GetProductByID(db *gorm.DB, ID int) (models.Product, error) {
+func GetProductByID(db *gorm.DB, ID string) (models.Product, error) {
 	var product models.Product
 
-	err := db.Find(&product, ID).Error
+	err := db.Find(&product, "id = ?", ID).Error
 
 	return product, err
 }
@@ -96,4 +96,11 @@ func AddProduct(db *gorm.DB, product models.Product) (models.Product, error) {
 	err := db.Create(&product).Error
 
 	return product, err
+}
+
+func DeleteProduct(db *gorm.DB, ID string) error {
+
+	err := db.Delete(models.Product{}, "id = ?", ID).Error
+
+	return err
 }
