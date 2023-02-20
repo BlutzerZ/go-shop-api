@@ -12,9 +12,17 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-// func thisIsController() {
+func GetProductByID(c *gin.Context) {
+	productID := c.Param("id")
 
-// }
+	//
+	product, err := configs.GetProductByID(configs.DB, productID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": err})
+	}
+
+	c.JSON(http.StatusOK, gin.H{"result": product})
+}
 
 func GetProduct(c *gin.Context) {
 	prodLimitQuery := c.Query("limit")
@@ -26,6 +34,7 @@ func GetProduct(c *gin.Context) {
 		return
 	}
 
+	// QUERY On Configs
 	products, err := configs.GetProductByLimit(configs.DB, prodLimit)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": err})
@@ -76,4 +85,17 @@ func CreateProduct(c *gin.Context) {
 		"message": "sucess creating product",
 		"details": createProduct,
 	})
+}
+
+func ProductDelete(c *gin.Context) {
+	productID := c.Param("id")
+
+	// query to db
+	err := configs.DeleteProduct(configs.DB, productID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "sucess deleted " + productID})
 }
