@@ -72,6 +72,26 @@ func DeleteUser(db *gorm.DB, ID int) (int, error) {
 	return ID, err
 }
 
+type UserChangePasswordRequest struct {
+	ID              int    `json:"id" binding:"required"`
+	CurrentPassword string `json:"currpwd" binding:"required"`
+	NewPassword     string `json:"newpwd" binding:"required"`
+}
+
+func ChangePasswordUser(db *gorm.DB, UpdatedUser UserChangePasswordRequest) (bool, error) {
+	var user models.User
+
+	err := db.Find(&user, "id = ? AND password = ?", UpdatedUser.ID, UpdatedUser.CurrentPassword).Error
+	isChanged := false
+	if user != (models.User{}) {
+		fmt.Println(user)
+		err = db.Model(&user).Where("id = ? AND password = ?", UpdatedUser.ID, UpdatedUser.CurrentPassword).Update("password", UpdatedUser.NewPassword).Error
+		isChanged = true
+	}
+
+	return isChanged, err
+}
+
 // ====================
 //   PRODUCT QUERY
 // ====================
@@ -103,4 +123,13 @@ func DeleteProduct(db *gorm.DB, ID string) error {
 	err := db.Delete(models.Product{}, "id = ?", ID).Error
 
 	return err
+}
+
+func UpdateProduct(db *gorm.DB, ID string, updateProduct models.Product) (models.Product, error) {
+	var product models.Product
+
+	err := db.Model(&product).Where("id = ?", ID).Updates(updateProduct).Error
+
+	return updateProduct, err
+
 }

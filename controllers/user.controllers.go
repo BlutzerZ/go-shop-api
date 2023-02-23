@@ -12,8 +12,8 @@ import (
 )
 
 type UserAuthRequest struct {
-	Username string
-	Password string
+	Username string `json:"username" binding:"required"`
+	Password string `json:"password" binding:"required"`
 }
 
 func UserAuth(c *gin.Context) {
@@ -100,4 +100,44 @@ func UserDelete(c *gin.Context) {
 	}
 	configs.DeleteUser(configs.DB, ud.ID)
 	c.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("%d sucess deleted from database", ud.ID)})
+}
+
+// type UserChangePasswordRequest struct {
+// 	ID              int `json:"id" binding:"required"`
+// 	currentPassword int `json:"currpwd" binding:"required"`
+// 	newPassword     int `json:"newpwd" binding:"required"`
+// }
+
+func UserChangePassword(c *gin.Context) {
+	var changePwReq configs.UserChangePasswordRequest
+
+	err := c.ShouldBindJSON(&changePwReq)
+	if err != nil {
+		for _, e := range err.(validator.ValidationErrors) {
+			errorMessage := fmt.Sprintf("error in field %s condition: %s", e.Field(), e.ActualTag())
+			c.JSON(http.StatusBadRequest, errorMessage)
+
+		}
+		return
+	}
+	fmt.Println(changePwReq)
+
+	isChanged, err := configs.ChangePasswordUser(configs.DB, changePwReq)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": err,
+		})
+		return
+	}
+
+	if isChanged {
+		c.JSON(http.StatusOK, gin.H{
+			"message": "success change password",
+		})
+		return
+	} else {
+		c.JSON(http.StatusOK, gin.H{
+			"message": "failed to change password",
+		})
+	}
 }

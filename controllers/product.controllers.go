@@ -99,3 +99,48 @@ func ProductDelete(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "sucess deleted " + productID})
 }
+
+type ProductUpdateRequest struct {
+	Name  string `json:"name"`
+	Desc  string `json:"desc"`
+	Stock int    `json:"stock"`
+	CatID int    `json:"catid"`
+}
+
+// Get Param | /product/update/id
+func ProductUpdate(c *gin.Context) {
+	var ProductUpdateRequest ProductUpdateRequest
+
+	productID := c.Param("id")
+
+	// Get JSON Body
+	err := c.ShouldBindJSON(&ProductUpdateRequest)
+	if err != nil {
+		for _, e := range err.(validator.ValidationErrors) {
+			errorMessage := fmt.Sprintf("error in field %s condition: %s", e.Field(), e.ActualTag())
+			c.JSON(http.StatusBadRequest, errorMessage)
+		}
+		return
+	}
+
+	// Convert
+	updatedProduct := models.Product{
+		Name:       ProductUpdateRequest.Name,
+		Desc:       ProductUpdateRequest.Desc,
+		Stock:      ProductUpdateRequest.Stock,
+		CatID:      ProductUpdateRequest.CatID,
+		DateUpdate: time.Now().Unix(),
+	}
+
+	// Databse Config
+	updatedProduct, err = configs.UpdateProduct(configs.DB, productID, updatedProduct)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": err})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "success update product",
+		"details": updatedProduct,
+	})
+}
