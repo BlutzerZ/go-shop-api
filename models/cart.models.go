@@ -7,13 +7,13 @@ import (
 
 type Cart struct {
 	ID         uuid.UUID `gorm:"type:char(12);primary_key"`
-	UserID     uuid.UUID `gorm:"type:char(24)"`
+	UserID     int       `gorm:"type:char(24)"`
 	DateUpdate int64
 }
 
-type CartItems struct {
+type CartItem struct {
 	CartID     uuid.UUID `gorm:"type:char(12);primary_key"`
-	Product    uuid.UUID `gorm:"type:char(36)"`
+	ProductID  uuid.UUID `gorm:"type:char(36)"`
 	Qty        int
 	DateUpdate int64
 }
