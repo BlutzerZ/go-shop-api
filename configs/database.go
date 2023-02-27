@@ -224,4 +224,6 @@ func ForwardCartToOrder(db *gorm.DB, userID int) error {
 
 	// forward
 	// err = db.Create(&)
+
+	return err
 }
