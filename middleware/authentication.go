@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"go-shop-api/configs"
 	"net/http"
 	"time"
 
@@ -49,13 +50,20 @@ func JWTMiddleware() (*jwt.GinJWTMiddleware, error) {
 			username := loginVals.Username
 			password := loginVals.Password
 
-			if (username == "test" && password == "test") || (username == "admin" && password == "admin") {
+			isAuth, err := configs.AuthUser(configs.DB, username, password)
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"message": err})
+				return nil, err
+			}
+
+			if isAuth {
 				return &UserData{
 					Username: username,
 				}, nil
 			}
 
 			return nil, jwt.ErrFailedAuthentication
+
 		},
 		Authorizator: func(data interface{}, c *gin.Context) bool {
 			if _, ok := data.(*UserData); ok {
