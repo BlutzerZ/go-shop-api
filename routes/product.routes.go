@@ -2,18 +2,16 @@ package routes
 
 import (
 	"go-shop-api/controllers"
-	"go-shop-api/middleware"
 
+	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
 )
 
-func ProductRoutes(r *gin.Engine) {
+func ProductRoutes(r *gin.Engine, authMiddleware *jwt.GinJWTMiddleware) {
 
-	authMiddleware, _ := middleware.JWTMiddleware()
-
-	r.GET("/products", authMiddleware.MiddlewareFunc(), controllers.GetProduct)
+	r.GET("/products", controllers.GetProduct)
 	r.GET("/product/:id", controllers.GetProductByID)
-	r.POST("/product/create", controllers.CreateProduct)
+	r.POST("/product/create", authMiddleware.MiddlewareFunc(), controllers.CreateProduct)
 	r.PUT("/product/:id", controllers.ProductUpdate)
 	r.DELETE("/product/:id", controllers.ProductDelete)
 }

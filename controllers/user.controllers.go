@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 )
@@ -83,12 +84,13 @@ func UserCreate(c *gin.Context) {
 }
 
 type UserDeleteRequest struct {
-	ID int `json:"id" binding:"required"`
+	Confirmation string `json:"confirmation" binding:"required"`
 }
 
 func UserDelete(c *gin.Context) {
 	var ud UserDeleteRequest
 
+	// EXTRACT JSON BODY
 	err := c.ShouldBindJSON(&ud)
 	if err != nil {
 		for _, e := range err.(validator.ValidationErrors) {
@@ -98,12 +100,20 @@ func UserDelete(c *gin.Context) {
 		}
 		return
 	}
-	configs.DeleteUser(configs.DB, ud.ID)
-	c.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("%d sucess deleted from database", ud.ID)})
+
+	// CLAIM TOKEN IF JSON BODY SAY "YES", THEN USE RESULT TO QUERY DELETE
+	if ud.Confirmation == "yes" {
+		claims := jwt.ExtractClaims(c)
+		username := claims["Username"].(string)
+		configs.DeleteUser(configs.DB, username)
+		c.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("%s sucess deleted from database", username)})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "error not confirmed"})
 }
 
 // type UserChangePasswordRequest struct {
-// 	ID              int `json:"id" binding:"required"`
+// 	Username        string
 // 	currentPassword int `json:"currpwd" binding:"required"`
 // 	newPassword     int `json:"newpwd" binding:"required"`
 // }
@@ -121,6 +131,10 @@ func UserChangePassword(c *gin.Context) {
 		return
 	}
 	fmt.Println(changePwReq)
+
+	claims := jwt.ExtractClaims(c)
+	username := claims["Username"].(string)
+	changePwReq.Username = username
 
 	isChanged, err := configs.ChangePasswordUser(configs.DB, changePwReq)
 	if err != nil {

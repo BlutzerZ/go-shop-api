@@ -66,14 +66,14 @@ func AddUser(db *gorm.DB, user models.User) (models.User, error) {
 	return user, err
 }
 
-func DeleteUser(db *gorm.DB, ID int) (int, error) {
-	err := db.Delete(models.User{}, ID).Error
+func DeleteUser(db *gorm.DB, username string) (string, error) {
+	err := db.Delete(models.User{}, "username = ?", username).Error
 
-	return ID, err
+	return username, err
 }
 
 type UserChangePasswordRequest struct {
-	ID              int    `json:"id" binding:"required"`
+	Username        string
 	CurrentPassword string `json:"currpwd" binding:"required"`
 	NewPassword     string `json:"newpwd" binding:"required"`
 }
@@ -81,11 +81,11 @@ type UserChangePasswordRequest struct {
 func ChangePasswordUser(db *gorm.DB, UpdatedUser UserChangePasswordRequest) (bool, error) {
 	var user models.User
 
-	err := db.Find(&user, "id = ? AND password = ?", UpdatedUser.ID, UpdatedUser.CurrentPassword).Error
+	err := db.Find(&user, "username = ? AND password = ?", UpdatedUser.Username, UpdatedUser.CurrentPassword).Error
 	isChanged := false
 	if user != (models.User{}) {
 		fmt.Println(user)
-		err = db.Model(&user).Where("id = ? AND password = ?", UpdatedUser.ID, UpdatedUser.CurrentPassword).Update("password", UpdatedUser.NewPassword).Error
+		err = db.Model(&user).Where("username = ? AND password = ?", UpdatedUser.Username, UpdatedUser.CurrentPassword).Update("password", UpdatedUser.NewPassword).Error
 		isChanged = true
 	}
 
