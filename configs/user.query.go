@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"go-shop-api/models"
 
+	uuid "github.com/satori/go.uuid"
 	"gorm.io/gorm"
 )
 
@@ -12,7 +13,7 @@ import (
 //	USER QUERY
 //
 // ================
-func AuthUser(db *gorm.DB, username string, password string) (bool, error) {
+func AuthUser(db *gorm.DB, username string, password string) (bool, uuid.UUID, error) {
 	var user models.User
 
 	err := db.Find(&user, "username = ? AND password = ?", username, password).Error
@@ -21,7 +22,7 @@ func AuthUser(db *gorm.DB, username string, password string) (bool, error) {
 		isAuth = true
 	}
 
-	return isAuth, err
+	return isAuth, user.UUID, err
 }
 
 func AddUser(db *gorm.DB, user models.User) (models.User, error) {
@@ -30,14 +31,14 @@ func AddUser(db *gorm.DB, user models.User) (models.User, error) {
 	return user, err
 }
 
-func DeleteUser(db *gorm.DB, username string) (string, error) {
-	err := db.Delete(models.User{}, "username = ?", username).Error
+func DeleteUser(db *gorm.DB, uuid uuid.UUID) (uuid.UUID, error) {
+	err := db.Delete(models.User{}, "uuid = ?", uuid).Error
 
-	return username, err
+	return uuid, err
 }
 
 type UserChangePasswordRequest struct {
-	Username        string
+	UUID            uuid.UUID
 	CurrentPassword string `json:"currpwd" binding:"required"`
 	NewPassword     string `json:"newpwd" binding:"required"`
 }
@@ -45,11 +46,11 @@ type UserChangePasswordRequest struct {
 func ChangePasswordUser(db *gorm.DB, UpdatedUser UserChangePasswordRequest) (bool, error) {
 	var user models.User
 
-	err := db.Find(&user, "username = ? AND password = ?", UpdatedUser.Username, UpdatedUser.CurrentPassword).Error
+	err := db.Find(&user, "uuid = ? AND password = ?", UpdatedUser.UUID, UpdatedUser.CurrentPassword).Error
 	isChanged := false
 	if user != (models.User{}) {
 		fmt.Println(user)
-		err = db.Model(&user).Where("username = ? AND password = ?", UpdatedUser.Username, UpdatedUser.CurrentPassword).Update("password", UpdatedUser.NewPassword).Error
+		err = db.Model(&user).Where("uuid = ? AND password = ?", UpdatedUser.UUID, UpdatedUser.CurrentPassword).Update("password", UpdatedUser.NewPassword).Error
 		isChanged = true
 	}
 

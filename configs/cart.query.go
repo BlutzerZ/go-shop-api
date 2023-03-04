@@ -3,6 +3,7 @@ package configs
 import (
 	"go-shop-api/models"
 
+	uuid "github.com/satori/go.uuid"
 	"gorm.io/gorm"
 )
 
@@ -10,11 +11,11 @@ import (
 //   CART QUERY
 // ====================
 
-func InsertItemToCart(db *gorm.DB, userID int, item models.CartItem) error {
+func InsertItemToCart(db *gorm.DB, UserID uuid.UUID, item models.CartItem) error {
 	var cart models.Cart
 
 	// First find user_id in cart model
-	err := db.Find(&cart, "user_id = ?", userID).Error
+	err := db.Find(&cart, "user_id = ?", UserID).Error
 	if err != nil {
 		return err
 	}
@@ -27,7 +28,7 @@ func InsertItemToCart(db *gorm.DB, userID int, item models.CartItem) error {
 
 		// this if first time to add item on cart
 	} else {
-		cart.UserID = userID
+		cart.UserID = UserID
 		err = db.Create(&cart).Error
 		if err != nil {
 			return err

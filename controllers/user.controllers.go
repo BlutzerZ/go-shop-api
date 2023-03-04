@@ -10,36 +10,37 @@ import (
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	uuid "github.com/satori/go.uuid"
 )
 
-type UserAuthRequest struct {
-	Username string `json:"username" binding:"required"`
-	Password string `json:"password" binding:"required"`
-}
+// type UserAuthRequest struct {
+// 	Username string `json:"username" binding:"required"`
+// 	Password string `json:"password" binding:"required"`
+// }
 
-func UserAuth(c *gin.Context) {
-	var authInput UserAuthRequest
+// func UserAuth(c *gin.Context) {
+// 	var authInput UserAuthRequest
 
-	err := c.ShouldBindJSON(&authInput)
-	if err != nil {
-		fmt.Println(err)
-	}
+// 	err := c.ShouldBindJSON(&authInput)
+// 	if err != nil {
+// 		fmt.Println(err)
+// 	}
 
-	// auth user and password
-	isAuth, err := configs.AuthUser(configs.DB, authInput.Username, authInput.Password)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": err})
-		return
-	}
+// 	// auth user and password
+// 	isAuth, err := configs.AuthUser(configs.DB, authInput.Username, authInput.Password)
+// 	if err != nil {
+// 		c.JSON(http.StatusBadRequest, gin.H{"message": err})
+// 		return
+// 	}
 
-	// return json is auth
-	if isAuth {
-		c.JSON(http.StatusOK, gin.H{"message": "login sucess"})
-	} else {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "login fail"})
-	}
+// 	// return json is auth
+// 	if isAuth {
+// 		c.JSON(http.StatusOK, gin.H{"message": "login sucess"})
+// 	} else {
+// 		c.JSON(http.StatusBadRequest, gin.H{"message": "login fail"})
+// 	}
 
-}
+// }
 
 type UserRequest struct {
 	Email    string `json:"email" binding:"required"`
@@ -104,9 +105,9 @@ func UserDelete(c *gin.Context) {
 	// CLAIM TOKEN IF JSON BODY SAY "YES", THEN USE RESULT TO QUERY DELETE
 	if ud.Confirmation == "yes" {
 		claims := jwt.ExtractClaims(c)
-		username := claims["Username"].(string)
-		configs.DeleteUser(configs.DB, username)
-		c.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("%s sucess deleted from database", username)})
+		uuid := uuid.FromStringOrNil(claims["uuid"].(string))
+		configs.DeleteUser(configs.DB, uuid)
+		c.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("%s sucess deleted from database", uuid)})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "error not confirmed"})
@@ -133,8 +134,8 @@ func UserChangePassword(c *gin.Context) {
 	fmt.Println(changePwReq)
 
 	claims := jwt.ExtractClaims(c)
-	username := claims["Username"].(string)
-	changePwReq.Username = username
+	uuid := uuid.FromStringOrNil(claims["uuid"].(string))
+	changePwReq.UUID = uuid
 
 	isChanged, err := configs.ChangePasswordUser(configs.DB, changePwReq)
 	if err != nil {

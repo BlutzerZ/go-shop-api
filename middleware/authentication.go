@@ -7,6 +7,7 @@ import (
 
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
+	uuid "github.com/satori/go.uuid"
 )
 
 type Login struct {
@@ -15,10 +16,10 @@ type Login struct {
 }
 
 type UserData struct {
-	Username string
+	UUID uuid.UUID
 }
 
-var identityKey = "Username"
+var identityKey = "uuid"
 
 // the jwt middleware
 func JWTMiddleware() (*jwt.GinJWTMiddleware, error) {
@@ -31,7 +32,7 @@ func JWTMiddleware() (*jwt.GinJWTMiddleware, error) {
 		PayloadFunc: func(data interface{}) jwt.MapClaims {
 			if v, ok := data.(*UserData); ok {
 				return jwt.MapClaims{
-					identityKey: v.Username,
+					identityKey: v.UUID,
 				}
 			}
 			return jwt.MapClaims{}
@@ -39,7 +40,7 @@ func JWTMiddleware() (*jwt.GinJWTMiddleware, error) {
 		IdentityHandler: func(c *gin.Context) interface{} {
 			claims := jwt.ExtractClaims(c)
 			return &UserData{
-				Username: claims[identityKey].(string),
+				UUID: uuid.FromStringOrNil(claims[identityKey].(string)), // converting to uuid
 			}
 		},
 		Authenticator: func(c *gin.Context) (interface{}, error) {
@@ -50,7 +51,7 @@ func JWTMiddleware() (*jwt.GinJWTMiddleware, error) {
 			username := loginVals.Username
 			password := loginVals.Password
 
-			isAuth, err := configs.AuthUser(configs.DB, username, password)
+			isAuth, uuid, err := configs.AuthUser(configs.DB, username, password)
 			if err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"message": err})
 				return nil, err
@@ -58,7 +59,7 @@ func JWTMiddleware() (*jwt.GinJWTMiddleware, error) {
 
 			if isAuth {
 				return &UserData{
-					Username: username,
+					UUID: uuid,
 				}, nil
 			}
 

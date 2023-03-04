@@ -5,7 +5,9 @@ import (
 )
 
 func AddItemToCart(c *gin.Context) {
+	// productID := c.Params("productID")
 
+	// err = configs.InsertItemToCart(configs.DB)
 }
 
 func EditItemOnCart(c *gin.Context) {
