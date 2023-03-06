@@ -17,19 +17,9 @@ func main() {
 		panic("Failed to initialize auth middleware")
 	}
 
-	// r.POST("/test/login", authMiddleware.LoginHandler)
-	// r.GET("/hello/world", authMiddleware.MiddlewareFunc(), func(c *gin.Context) {
-	// 	claims := jwt.ExtractClaims(c)
-	// 	username := claims["Username"].(string)
-	// 	c.JSON(http.StatusOK, gin.H{
-	// 		"username": username,
-	// 		"text":     "yooo hello world from" + username,
-	// 	})
-	// })
-
-	// route
 	routes.UserRoute(r, authMiddleware)
 	routes.ProductRoutes(r, authMiddleware)
+	routes.CartRoutes(r, authMiddleware)
 
 	r.Run()
 }
