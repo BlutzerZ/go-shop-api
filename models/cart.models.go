@@ -13,6 +13,7 @@ type Cart struct {
 
 type CartItem struct {
 	CartID     uuid.UUID `gorm:"type:char(36);primary_key"`
+	Cart       Cart      `gorm:"foreignKey:CartID"`
 	ProductID  uuid.UUID `gorm:"type:char(36)"`
 	Qty        int
 	DateUpdate int64
