@@ -11,7 +11,7 @@ import (
 //   CART QUERY
 // ====================
 
-func InsertItemToCart(db *gorm.DB, UserID uuid.UUID, item models.CartItem) error {
+func InsertItemToCart(db *gorm.DB, UserID uuid.UUID, item *models.CartItem) error {
 	var cart models.Cart
 
 	// First find user_id in cart model
@@ -40,7 +40,7 @@ func InsertItemToCart(db *gorm.DB, UserID uuid.UUID, item models.CartItem) error
 	return err
 }
 
-func EditItemCart(db *gorm.DB, userID int, item models.CartItem) error {
+func EditItemCart(db *gorm.DB, userID uuid.UUID, item models.CartItem) error {
 	var cart models.Cart
 	var cartItem models.CartItem
 
@@ -49,13 +49,14 @@ func EditItemCart(db *gorm.DB, userID int, item models.CartItem) error {
 	if err != nil {
 		return err
 	}
+
 	// Update item on cart
-	err = db.Model(&cartItem).Where("cart_id = ? and product_id =?", cart.ID, item.ProductID).Updates(&item).Error
+	err = db.Model(&cartItem).Where("cart_id = ? and product_id = ?", cart.ID, item.ProductID).Updates(&item).Error
 
 	return err
 }
 
-func DeleteItemcART(db *gorm.DB, userID int, item models.CartItem) error {
+func DeleteItemCart(db *gorm.DB, userID uuid.UUID, item models.CartItem) error {
 	var cart models.Cart
 
 	// Get Cart model with user ID
@@ -70,20 +71,17 @@ func DeleteItemcART(db *gorm.DB, userID int, item models.CartItem) error {
 	return err
 }
 
-func GetAllItemCart(db *gorm.DB, userID int) error {
+func GetAllItemCart(db *gorm.DB, userID uuid.UUID) ([]models.CartItem, error) {
 	var cart models.Cart
 	var cartItems []models.CartItem
 
 	// Get Cart model with user ID
 	err := db.Find(&cart, "user_id = ?", userID).Error
-	if err != nil {
-		return err
-	}
 
 	// Show all item on cart
 	err = db.Find(&cartItems).Where("cart_id = ?", cart.ID).Error
 
-	return err
+	return cartItems, err
 }
 
 func ForwardCartToOrder(db *gorm.DB, userID int) error {
