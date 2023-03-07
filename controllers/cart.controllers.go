@@ -164,6 +164,41 @@ func GetItemsOnCart(c *gin.Context) {
 
 }
 
-func SendCartToCheckout(c *gin.Context) {
+func SendCartToOrder(c *gin.Context) {
+	var itemsOfCart []models.CartItem
 
+	// CLAIM JWT TOKEN
+	claims := jwt.ExtractClaims(c)
+	userID := uuid.FromStringOrNil(claims["uuid"].(string))
+
+	// query
+	itemsOfCart, err := configs.GetAllItemCart(configs.DB, userID)
+	if err != nil {
+		c.JSON(http.StatusBadGateway, gin.H{
+			"message": err,
+		})
+		return
+	}
+
+	// send item to order
+	err = configs.ForwardCartToOrder(configs.DB, userID, itemsOfCart)
+	if err != nil {
+		c.JSON(http.StatusBadGateway, gin.H{
+			"message": err,
+		})
+		return
+	}
+
+	// delete all item cart
+	err = configs.DeleteAllItemCart(configs.DB, userID)
+	if err != nil {
+		c.JSON(http.StatusBadGateway, gin.H{
+			"message": err,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "sucess added to order",
+	})
 }

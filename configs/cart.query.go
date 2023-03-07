@@ -71,6 +71,22 @@ func DeleteItemCart(db *gorm.DB, userID uuid.UUID, item models.CartItem) error {
 	return err
 }
 
+func DeleteAllItemCart(db *gorm.DB, userID uuid.UUID) error {
+	var cart models.Cart
+	var cartItems []models.CartItem
+
+	// Get Cart model with user ID
+	err := db.Find(&cart, "user_id = ?", userID).Error
+	if err != nil {
+		return err
+	}
+
+	// Delete item ont cart
+	err = db.Where("cart_id = ?", cart.ID).Delete(&cartItems).Error
+
+	return err
+}
+
 func GetAllItemCart(db *gorm.DB, userID uuid.UUID) ([]models.CartItem, error) {
 	var cart models.Cart
 	var cartItems []models.CartItem
@@ -84,17 +100,32 @@ func GetAllItemCart(db *gorm.DB, userID uuid.UUID) ([]models.CartItem, error) {
 	return cartItems, err
 }
 
-func ForwardCartToOrder(db *gorm.DB, userID int) error {
-	var cart models.Cart
+func ForwardCartToOrder(db *gorm.DB, userID uuid.UUID, cartItems []models.CartItem) error {
+	var order models.Order
+	var orderitems []models.OrderItem
 
-	// Get Cart model with user ID
-	err := db.Find(&cart, "user_id = ?", userID).Error
+	// create order table
+	order.UserID = userID
+	order.Status = "payment"
+	err := db.Create(&order).Error
 	if err != nil {
 		return err
 	}
 
 	// forward
-	// err = db.Create(&)
+	for _, cartItem := range cartItems {
+		orderItem := models.OrderItem{
+			OrderID:   order.ID,
+			ProductID: cartItem.ProductID,
+			Qty:       cartItem.Qty,
+			Price:     cartItem.Price,
+			Discount:  cartItem.Discount,
+			SubTotal:  cartItem.Price * cartItem.Discount,
+		}
+		orderitems = append(orderitems, orderItem)
+	}
+
+	err = db.Create(&orderitems).Error
 
 	return err
 }

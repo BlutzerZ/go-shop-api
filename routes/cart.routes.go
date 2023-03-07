@@ -13,5 +13,5 @@ func CartRoutes(r *gin.Engine, authMiddleware *jwt.GinJWTMiddleware) {
 	r.DELETE("/cart/:productID", authMiddleware.MiddlewareFunc(), controllers.DeleteItemOnCart)
 	r.GET("/cart", authMiddleware.MiddlewareFunc(), controllers.GetItemsOnCart)
 
-	// r.POST("/cart/checkout", controller.SendCartToCheckout)
+	r.POST("/cart/order", authMiddleware.MiddlewareFunc(), controllers.SendCartToOrder)
 }

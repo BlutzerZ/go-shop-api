@@ -6,11 +6,23 @@ import (
 )
 
 type Order struct {
-	ID         uuid.UUID `gorm:"type:char(12);primary_key"`
-	UserID     uuid.UUID `gorm:"type:char(24)"`
-	CartID     uuid.UUID `gorm:"type:char(12)"`
+	ID         uuid.UUID `gorm:"type:char(36);primary_key"`
+	UserID     uuid.UUID `gorm:"type:char(36)"`
 	Adress     string
+	Status     string
+	TOtal      int
+	Discount   int
 	DateUpdate int64
+}
+
+type OrderItem struct {
+	OrderID   uuid.UUID `gorm:"type:char(36)"`
+	Order     Order     `gorm:"foreignKey:OrderID"`
+	ProductID uuid.UUID `gorm:"type:char(36);primary_key"`
+	Qty       int
+	Price     int
+	Discount  int
+	SubTotal  int
 }
 
 func (o *Order) BeforeCreate(tx *gorm.DB) error {
