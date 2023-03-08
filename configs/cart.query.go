@@ -93,6 +93,9 @@ func GetAllItemCart(db *gorm.DB, userID uuid.UUID) ([]models.CartItem, error) {
 
 	// Get Cart model with user ID
 	err := db.Find(&cart, "user_id = ?", userID).Error
+	if err != nil {
+		return cartItems, err
+	}
 
 	// Show all item on cart
 	err = db.Find(&cartItems).Where("cart_id = ?", cart.ID).Error

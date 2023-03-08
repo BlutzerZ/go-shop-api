@@ -20,6 +20,7 @@ func main() {
 	routes.UserRoute(r, authMiddleware)
 	routes.ProductRoutes(r, authMiddleware)
 	routes.CartRoutes(r, authMiddleware)
+	routes.OrderRoutes(r, authMiddleware)
 
 	r.Run()
 }
