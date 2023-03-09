@@ -9,6 +9,7 @@ type Product struct {
 	ID         uuid.UUID `gorm:"type:char(36);primary_key"`
 	Name       string
 	Desc       string
+	Price      int
 	Stock      int
 	CatID      int
 	DateCreate int64
