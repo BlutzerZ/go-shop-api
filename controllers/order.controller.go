@@ -62,7 +62,8 @@ func GetOrderByID(c *gin.Context) {
 func CancelOrderByID(c *gin.Context) {
 	var order models.Order
 
-	order.ID = uuid.FromStringOrNil(c.Param("orderID"))
+	orderIDParam := c.Param("orderID")
+	order.ID = uuid.FromStringOrNil(orderIDParam)
 	claims := jwt.ExtractClaims(c)
 	order.UserID = uuid.FromStringOrNil(claims["uuid"].(string))
 
@@ -75,7 +76,7 @@ func CancelOrderByID(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusBadRequest, gin.H{
-		"message": "sucess canceling transaction",
+		"message": "sucess canceling transaction id " + c.Param("orderID"),
 	})
 }
 
@@ -86,7 +87,16 @@ func DeleteOrderByID(c *gin.Context) {
 	claims := jwt.ExtractClaims(c)
 	order.UserID = uuid.FromStringOrNil(claims["uuid"].(string))
 
-	err := configs.DeleteOrderByID(configs.DB, order)
+	err := configs.DeleteAllOrderItem(configs.DB, order)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "failed to delete order",
+			"error":   err,
+		})
+		return
+	}
+
+	err = configs.DeleteOrderByID(configs.DB, order)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "failed to delete order",

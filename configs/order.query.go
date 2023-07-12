@@ -41,7 +41,13 @@ func CancelOrderByID(db *gorm.DB, order models.Order) error {
 }
 
 func DeleteAllOrderItem(db *gorm.DB, order models.Order) error {
+	var orderItems []models.OrderItem
+
 	err := db.Find(&order, "user_id = ? AND id = ?", order.UserID, order.ID).Error
+
+	if order != (models.Order{}) {
+		err = db.Find(&orderItems, "order_id = ?", order.ID).Delete(&orderItems).Error
+	}
 
 	return err
 	// need to be fixed
